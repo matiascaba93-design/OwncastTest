@@ -14,6 +14,7 @@ import (
 	"github.com/owncast/owncast/activitypub/outbox"
 	"github.com/owncast/owncast/core"
 	"github.com/owncast/owncast/core/chat"
+	"github.com/owncast/owncast/core/viewerauth"
 	"github.com/owncast/owncast/core/webhooks"
 	"github.com/owncast/owncast/models"
 	"github.com/owncast/owncast/persistence/configrepository"
@@ -227,6 +228,68 @@ func SetAdminPassword(w http.ResponseWriter, r *http.Request) {
 
 	configRepository := configrepository.Get()
 	if err := configRepository.SetAdminPassword(configValue.Value.(string)); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	webutils.WriteSimpleResponse(w, true, "changed")
+}
+
+// SetViewerAccessPassword sets or clears the viewer-facing password.
+func SetViewerAccessPassword(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		return
+	}
+
+	password, ok := configValue.Value.(string)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to read password value")
+		return
+	}
+
+	configRepository := configrepository.Get()
+	trimmed := strings.TrimSpace(password)
+
+	var err error
+	if trimmed == "" {
+		err = configRepository.ClearViewerAccessPassword()
+	} else {
+		err = configRepository.SetViewerAccessPassword(trimmed)
+	}
+
+	if err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	viewerauth.InvalidateAllSessions()
+	webutils.WriteSimpleResponse(w, true, "changed")
+}
+
+// SetRecordingEnabled toggles automatic stream recording support.
+func SetRecordingEnabled(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		return
+	}
+
+	enabled, ok := configValue.Value.(bool)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to parse recording flag")
+		return
+	}
+
+	configRepository := configrepository.Get()
+	if err := configRepository.SetRecordingEnabled(enabled); err != nil {
 		webutils.WriteSimpleResponse(w, false, err.Error())
 		return
 	}

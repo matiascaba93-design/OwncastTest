@@ -8,6 +8,7 @@ import (
 
 	"github.com/owncast/owncast/activitypub"
 	"github.com/owncast/owncast/config"
+	"github.com/owncast/owncast/core/viewerauth"
 	"github.com/owncast/owncast/models"
 	"github.com/owncast/owncast/persistence/configrepository"
 	"github.com/owncast/owncast/utils"
@@ -64,6 +65,10 @@ func GetWebConfig(w http.ResponseWriter, r *http.Request) {
 	middleware.EnableCors(w)
 	middleware.DisableCache(w)
 	w.Header().Set("Content-Type", "application/json")
+
+	if !viewerauth.RequireValidSessionOrJSON(w, r) {
+		return
+	}
 
 	configuration := getConfigResponse()
 

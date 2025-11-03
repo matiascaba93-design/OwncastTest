@@ -99,6 +99,43 @@ func (r *SqlConfigRepository) SetAdminPassword(key string) error {
 	return r.datastore.SetString(adminPasswordKey, hashed_pass)
 }
 
+// GetViewerAccessPassword returns the hashed viewer access password, if any.
+func (r *SqlConfigRepository) GetViewerAccessPassword() string {
+	password, _ := r.datastore.GetString(viewerAccessPasswordKey)
+	return password
+}
+
+// SetViewerAccessPassword stores the hashed viewer access password.
+func (r *SqlConfigRepository) SetViewerAccessPassword(password string) error {
+	if password == "" {
+		return r.ClearViewerAccessPassword()
+	}
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return err
+	}
+	return r.datastore.SetString(viewerAccessPasswordKey, hashedPassword)
+}
+
+// ClearViewerAccessPassword removes any viewer access password.
+func (r *SqlConfigRepository) ClearViewerAccessPassword() error {
+	return r.datastore.SetString(viewerAccessPasswordKey, "")
+}
+
+// GetRecordingEnabled returns whether automatic recording is enabled.
+func (r *SqlConfigRepository) GetRecordingEnabled() bool {
+	enabled, err := r.datastore.GetBool(recordingEnabledKey)
+	if err != nil {
+		return false
+	}
+	return enabled
+}
+
+// SetRecordingEnabled updates the recording configuration flag.
+func (r *SqlConfigRepository) SetRecordingEnabled(enabled bool) error {
+	return r.datastore.SetBool(recordingEnabledKey, enabled)
+}
+
 // GetLogoPath will return the path for the logo, relative to webroot.
 func (r *SqlConfigRepository) GetLogoPath() string {
 	logo, err := r.datastore.GetString(logoPathKey)

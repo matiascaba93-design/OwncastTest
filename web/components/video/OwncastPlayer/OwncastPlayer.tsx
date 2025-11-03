@@ -280,6 +280,29 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     }
   }, [clockSkew]);
 
+  useEffect(() => {
+    if (!playerRef.current) {
+      return;
+    }
+
+    if (online) {
+      const currentSource = playerRef.current.currentSrc();
+      if (!currentSource || !currentSource.includes(source)) {
+        playerRef.current.src({ src: source, type: 'application/x-mpegURL' });
+      }
+
+      const playPromise = playerRef.current.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          // Autoplay might be blocked; the viewer can press play manually.
+        });
+      }
+    } else {
+      playerRef.current.pause();
+      setVideoPlaying(false);
+    }
+  }, [online, source]);
+
   useEffect(
     () => () => {
       stopLatencyCompensator();
@@ -300,14 +323,12 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       )}
     >
       <div className={classNames(styles.container, className)} id="player">
-        {online && (
-          <div className={styles.player}>
-            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} aria-label={title} />
-          </div>
-        )}
-        <div className={styles.poster}>
-          {!videoPlaying && (
-            <VideoPoster online={online} initialSrc="/thumbnail.jpg" src="/thumbnail.jpg" />
+        <div className={styles.player}>
+          <VideoJS options={videoJsOptions} onReady={handlePlayerReady} aria-label={title} />
+          {(!videoPlaying || !online) && (
+            <div className={styles.poster}>
+              <VideoPoster online={online} initialSrc="/thumbnail.jpg" src="/thumbnail.jpg" />
+            </div>
           )}
         </div>
       </div>

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/owncast/owncast/config"
+	"github.com/owncast/owncast/core/viewerauth"
 	"github.com/owncast/owncast/models"
 	"github.com/owncast/owncast/persistence/chatmessagerepository"
 	"github.com/owncast/owncast/persistence/configrepository"
@@ -52,6 +53,10 @@ func RegisterAnonymousChatUser(w http.ResponseWriter, r *http.Request) {
 	middleware.EnableCors(w)
 
 	userRepository := userrepository.Get()
+
+	if r.Method != http.MethodOptions && !viewerauth.RequireValidSessionOrJSON(w, r) {
+		return
+	}
 
 	if r.Method == http.MethodOptions {
 		// All OPTIONS requests should have a wildcard CORS header.

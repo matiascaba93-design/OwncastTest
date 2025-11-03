@@ -15,6 +15,11 @@ type ConfigRepository interface {
 	SetStreamTitle(title string) error
 	GetAdminPassword() string
 	SetAdminPassword(key string) error
+	GetViewerAccessPassword() string
+	SetViewerAccessPassword(key string) error
+	ClearViewerAccessPassword() error
+	GetRecordingEnabled() bool
+	SetRecordingEnabled(enabled bool) error
 	GetLogoPath() string
 	SetLogoPath(logo string) error
 	SetLogoUniquenessString(uniqueness string) error

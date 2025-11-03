@@ -4,6 +4,8 @@ const (
 	extraContentKey                 = "extra_page_content"
 	streamTitleKey                  = "stream_title"
 	adminPasswordKey                = "admin_password_key"
+	viewerAccessPasswordKey         = "viewer_access_password"
+	recordingEnabledKey             = "recording_enabled"
 	logoPathKey                     = "logo_path"
 	logoUniquenessKey               = "logo_uniqueness"
 	serverSummaryKey                = "server_summary"

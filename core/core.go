@@ -38,6 +38,10 @@ func Start() error {
 	configRepository := configrepository.Get()
 	// configRepository.PopulateDefaults()
 
+	if err := os.MkdirAll(config.RecordingsStoragePath, 0o755); err != nil {
+		log.Errorln("failed to create recordings directory", err)
+	}
+
 	if err := configRepository.VerifySettings(); err != nil {
 		log.Error(err)
 		return err

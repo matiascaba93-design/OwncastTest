@@ -51,10 +51,14 @@ func GetServerConfig(w http.ResponseWriter, r *http.Request) {
 			CustomJavascript:    configRepository.GetCustomJavascript(),
 			AppearanceVariables: configRepository.GetCustomColorVariableValues(),
 		},
-		FFmpegPath:                ffmpeg,
-		AdminPassword:             configRepository.GetAdminPassword(),
-		StreamKeys:                configRepository.GetStreamKeys(),
-		StreamKeyOverridden:       config.TemporaryStreamKey != "",
+		FFmpegPath:          ffmpeg,
+		AdminPassword:       configRepository.GetAdminPassword(),
+		StreamKeys:          configRepository.GetStreamKeys(),
+		StreamKeyOverridden: config.TemporaryStreamKey != "",
+		ViewerAccess: viewerAccessAdminResponse{
+			Enabled: configRepository.GetViewerAccessPassword() != "",
+		},
+		RecordingEnabled:          configRepository.GetRecordingEnabled(),
 		WebServerPort:             config.WebServerPort,
 		WebServerIP:               config.WebServerIP,
 		RTMPServerPort:            configRepository.GetRTMPPortNumber(),
@@ -109,6 +113,7 @@ type serverConfigAdminResponse struct {
 	YP                        yp                          `json:"yp"`
 	FFmpegPath                string                      `json:"ffmpegPath"`
 	AdminPassword             string                      `json:"adminPassword"`
+	ViewerAccess              viewerAccessAdminResponse   `json:"viewerAccess"`
 	SocketHostOverride        string                      `json:"socketHostOverride,omitempty"`
 	WebServerIP               string                      `json:"webServerIP"`
 	VideoCodec                string                      `json:"videoCodec"`
@@ -131,6 +136,7 @@ type serverConfigAdminResponse struct {
 	DisableSearchIndexing     bool                        `json:"disableSearchIndexing"`
 	StreamKeyOverridden       bool                        `json:"streamKeyOverridden"`
 	HideViewerCount           bool                        `json:"hideViewerCount"`
+	RecordingEnabled          bool                        `json:"recordingEnabled"`
 }
 
 type videoSettings struct {
@@ -173,4 +179,8 @@ type federationConfigResponse struct {
 type notificationsConfigResponse struct {
 	Browser models.BrowserNotificationConfiguration `json:"browser"`
 	Discord models.DiscordConfiguration             `json:"discord"`
+}
+
+type viewerAccessAdminResponse struct {
+	Enabled bool `json:"enabled"`
 }

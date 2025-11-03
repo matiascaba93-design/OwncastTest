@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Collapse, Typography } from 'antd';
 import { TEXTFIELD_TYPE_NUMBER, TEXTFIELD_TYPE_PASSWORD, TEXTFIELD_TYPE_URL } from './TextField';
 import { TextFieldWithSubmit } from './TextFieldWithSubmit';
+import { ToggleSwitch } from './ToggleSwitch';
 import { ServerStatusContext } from '../../utils/server-status-context';
 import { AlertMessageContext } from '../../utils/alert-message-context';
 import {
@@ -9,8 +10,10 @@ import {
   TEXTFIELD_PROPS_RTMP_PORT,
   TEXTFIELD_PROPS_SOCKET_HOST_OVERRIDE,
   TEXTFIELD_PROPS_ADMIN_PASSWORD,
+  TEXTFIELD_PROPS_VIEWER_PASSWORD,
   TEXTFIELD_PROPS_WEB_PORT,
   TEXTFIELD_PROPS_VIDEO_SERVING_ENDPOINT,
+  FIELD_PROPS_RECORDING_ENABLED,
 } from '../../utils/config-constants';
 import { UpdateArgs } from '../../types/config-section';
 import { ResetYP } from './ResetYP';
@@ -32,6 +35,7 @@ export default function EditInstanceDetails() {
     yp,
     socketHostOverride,
     videoServingEndpoint,
+    viewerAccess,
   } = serverConfig;
 
   useEffect(() => {
@@ -41,6 +45,7 @@ export default function EditInstanceDetails() {
       webServerPort,
       socketHostOverride,
       videoServingEndpoint,
+      viewerPassword: '',
     });
   }, [serverConfig]);
 
@@ -65,6 +70,20 @@ export default function EditInstanceDetails() {
     );
   };
 
+  const showViewerPasswordChangeMessage = () => {
+    const trimmedValue = (formDataValues.viewerPassword || '').trim();
+    setFieldInConfigState({ fieldName: 'viewerAccess', value: { enabled: trimmedValue.length > 0 } });
+    setFormDataValues({
+      ...formDataValues,
+      viewerPassword: '',
+    });
+    if (trimmedValue.length > 0) {
+      setMessage('Viewer password set. Share it with guests before going live.');
+    } else {
+      setMessage('Viewer password cleared. Anyone with the link can watch.');
+    }
+  };
+
   const showFfmpegChangeMessage = () => {
     if (serverStatusData.online) {
       setMessage('The updated ffmpeg path will be used when starting your next live stream.');
@@ -85,6 +104,29 @@ export default function EditInstanceDetails() {
           />
         </div>
       </div>
+      <div className="field-container field-streamkey-container">
+        <div className="left-side">
+          <TextFieldWithSubmit
+            fieldName="viewerPassword"
+            {...TEXTFIELD_PROPS_VIEWER_PASSWORD}
+            value={formDataValues.viewerPassword}
+            type={TEXTFIELD_TYPE_PASSWORD}
+            onChange={handleFieldChange}
+            onSubmit={showViewerPasswordChangeMessage}
+          />
+          <Typography.Paragraph type={viewerAccess?.enabled ? 'success' : 'secondary'}>
+            {viewerAccess?.enabled
+              ? 'Viewer password is currently enabled for guests.'
+              : 'Viewer password is currently disabled.'}
+          </Typography.Paragraph>
+        </div>
+      </div>
+      <ToggleSwitch
+        fieldName="recordingEnabled"
+        {...FIELD_PROPS_RECORDING_ENABLED}
+        checked={serverConfig.recordingEnabled}
+        useSubmit
+      />
       <TextFieldWithSubmit
         fieldName="ffmpegPath"
         {...TEXTFIELD_PROPS_FFMPEG}

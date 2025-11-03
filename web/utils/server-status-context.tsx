@@ -10,6 +10,10 @@ const initialServerConfigState: ConfigDetails = {
   streamKeys: [],
   streamKeyOverridden: false,
   adminPassword: '',
+  viewerAccess: {
+    enabled: false,
+  },
+  recordingEnabled: false,
   instanceDetails: {
     customStyles: '',
     customJavascript: '',

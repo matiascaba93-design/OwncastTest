@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/owncast/owncast/core"
+	"github.com/owncast/owncast/core/viewerauth"
 	"github.com/owncast/owncast/persistence/configrepository"
 	"github.com/owncast/owncast/utils"
 	"github.com/owncast/owncast/webserver/router/middleware"
@@ -14,6 +15,10 @@ import (
 
 // GetStatus gets the status of the server.
 func GetStatus(w http.ResponseWriter, r *http.Request) {
+	if !viewerauth.RequireValidSessionOrJSON(w, r) {
+		return
+	}
+
 	response := getStatusResponse()
 
 	w.Header().Set("Content-Type", "application/json")
