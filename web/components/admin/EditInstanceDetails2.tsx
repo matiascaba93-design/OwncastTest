@@ -73,7 +73,10 @@ export default function EditInstanceDetails() {
   const showViewerPasswordChangeMessage = () => {
     const trimmedValue = (formDataValues.viewerPassword || '').trim();
     if (setFieldInConfigState) {
-      setFieldInConfigState({ fieldName: 'viewerAccess', value: { enabled: trimmedValue.length > 0 } });
+      setFieldInConfigState({
+        fieldName: 'viewerAccess',
+        value: { enabled: trimmedValue.length > 0 },
+      });
     }
     setFormDataValues({
       ...formDataValues,

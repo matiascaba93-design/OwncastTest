@@ -482,7 +482,9 @@ export const ClientConfigStore: FC = () => {
   useEffect(() => {
     if (viewerAccessState !== ViewerAccessState.Authorized) {
       clearInterval(serverStatusRefreshPoll);
-      return;
+      return () => {
+        clearInterval(serverStatusRefreshPoll);
+      };
     }
 
     handleUserRegistration();

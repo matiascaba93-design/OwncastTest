@@ -2,10 +2,7 @@ import { FC, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { Button, Form, Input, Typography, Alert } from 'antd';
 import { ViewerAccessService } from '../../services/viewer-access-service';
-import {
-  ViewerAccessState,
-  viewerAccessStateAtom,
-} from '../stores/ClientConfigStore';
+import { ViewerAccessState, viewerAccessStateAtom } from '../stores/ClientConfigStore';
 
 import styles from './ViewerPasswordGate.module.scss';
 
@@ -48,9 +45,7 @@ export const ViewerPasswordGate: FC = () => {
           >
             <Input.Password autoFocus disabled={submitting} placeholder="Password" size="large" />
           </Form.Item>
-          {error && (
-            <Alert type="error" message={error} showIcon className={styles.errorAlert} />
-          )}
+          {error && <Alert type="error" message={error} showIcon className={styles.errorAlert} />}
           <Form.Item>
             <Button type="primary" htmlType="submit" block loading={submitting} size="large">
               Unlock Stream
