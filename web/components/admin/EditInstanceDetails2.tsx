@@ -26,7 +26,7 @@ export default function EditInstanceDetails() {
   const serverStatusData = useContext(ServerStatusContext);
   const { setMessage } = useContext(AlertMessageContext);
 
-  const { serverConfig } = serverStatusData || {};
+  const { serverConfig, setFieldInConfigState } = serverStatusData || {};
 
   const {
     ffmpegPath,
@@ -72,7 +72,9 @@ export default function EditInstanceDetails() {
 
   const showViewerPasswordChangeMessage = () => {
     const trimmedValue = (formDataValues.viewerPassword || '').trim();
-    setFieldInConfigState({ fieldName: 'viewerAccess', value: { enabled: trimmedValue.length > 0 } });
+    if (setFieldInConfigState) {
+      setFieldInConfigState({ fieldName: 'viewerAccess', value: { enabled: trimmedValue.length > 0 } });
+    }
     setFormDataValues({
       ...formDataValues,
       viewerPassword: '',
