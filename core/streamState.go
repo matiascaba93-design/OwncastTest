@@ -113,6 +113,8 @@ func SetStreamAsDisconnected() {
 		_yp.Stop()
 	}
 
+	recorder.Stop()
+
 	// If there is no current broadcast available the previous stream
 	// likely failed for some reason. Don't try to append to it.
 	// Just transition to offline.
@@ -122,8 +124,6 @@ func SetStreamAsDisconnected() {
 		log.Errorln("unexpected nil _currentBroadcast")
 		return
 	}
-
-	recorder.Stop()
 
 	for index := range _currentBroadcast.OutputSettings {
 		makeVariantIndexOffline(index, offlineFilePath, offlineFilename)

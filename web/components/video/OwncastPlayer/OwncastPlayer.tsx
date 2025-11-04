@@ -42,6 +42,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
   const playerRef = React.useRef(null);
   const [videoPlaying, setVideoPlaying] = useRecoilState<boolean>(isVideoPlayingAtom);
   const clockSkew = useRecoilValue<Number>(clockSkewAtom);
+  const lastOnlineRef = React.useRef<boolean>(online);
+  const lastAppliedSourceRef = React.useRef<string | null>(null);
 
   const setSavedVolume = () => {
     try {
@@ -282,13 +284,16 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
 
   useEffect(() => {
     if (!playerRef.current) {
+      lastOnlineRef.current = online;
       return;
     }
 
     if (online) {
-      const currentSource = playerRef.current.currentSrc();
-      if (!currentSource || !currentSource.includes(source)) {
-        playerRef.current.src({ src: source, type: 'application/x-mpegURL' });
+      if (!lastOnlineRef.current || lastAppliedSourceRef.current !== source) {
+        const cacheBustedSource = `${source}${source.includes('?') ? '&' : '?'}cb=${Date.now()}`;
+        playerRef.current.src({ src: cacheBustedSource, type: 'application/x-mpegURL' });
+        playerRef.current.load();
+        lastAppliedSourceRef.current = source;
       }
 
       const playPromise = playerRef.current.play();
@@ -299,8 +304,12 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       }
     } else {
       playerRef.current.pause();
+      playerRef.current.currentTime(0);
       setVideoPlaying(false);
+      lastAppliedSourceRef.current = null;
     }
+
+    lastOnlineRef.current = online;
   }, [online, source]);
 
   useEffect(
