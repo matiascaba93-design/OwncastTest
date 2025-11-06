@@ -14,6 +14,8 @@ import {
   TEXTFIELD_PROPS_WEB_PORT,
   TEXTFIELD_PROPS_VIDEO_SERVING_ENDPOINT,
   FIELD_PROPS_RECORDING_ENABLED,
+  FIELD_PROPS_MOBILE_CHAT_ENABLED,
+  FIELD_PROPS_MOBILE_EXTRA_CONTENT_ENABLED,
 } from '../../utils/config-constants';
 import { UpdateArgs } from '../../types/config-section';
 import { ResetYP } from './ResetYP';
@@ -28,15 +30,17 @@ export default function EditInstanceDetails() {
 
   const { serverConfig, setFieldInConfigState } = serverStatusData || {};
 
-  const {
-    ffmpegPath,
-    rtmpServerPort,
-    webServerPort,
-    yp,
-    socketHostOverride,
-    videoServingEndpoint,
-    viewerAccess,
-  } = serverConfig;
+    const {
+      ffmpegPath,
+      rtmpServerPort,
+      webServerPort,
+      yp,
+      socketHostOverride,
+      videoServingEndpoint,
+      viewerAccess,
+      mobileChatEnabled,
+      mobileExtraPageContentEnabled,
+    } = serverConfig;
 
   useEffect(() => {
     setFormDataValues({
@@ -130,6 +134,18 @@ export default function EditInstanceDetails() {
         fieldName="recordingEnabled"
         {...FIELD_PROPS_RECORDING_ENABLED}
         checked={serverConfig.recordingEnabled}
+        useSubmit
+      />
+      <ToggleSwitch
+        fieldName="mobileChatEnabled"
+        {...FIELD_PROPS_MOBILE_CHAT_ENABLED}
+        checked={mobileChatEnabled}
+        useSubmit
+      />
+      <ToggleSwitch
+        fieldName="mobileExtraPageContentEnabled"
+        {...FIELD_PROPS_MOBILE_EXTRA_CONTENT_ENABLED}
+        checked={mobileExtraPageContentEnabled}
         useSubmit
       />
       <TextFieldWithSubmit

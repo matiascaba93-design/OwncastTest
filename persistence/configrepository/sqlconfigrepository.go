@@ -533,6 +533,36 @@ func (r *SqlConfigRepository) GetChatDisabled() bool {
 	return false
 }
 
+// SetMobileChatEnabled will persist the mobile chat toggle state.
+func (r *SqlConfigRepository) SetMobileChatEnabled(enabled bool) error {
+	return r.datastore.SetBool(mobileChatEnabledKey, enabled)
+}
+
+// GetMobileChatEnabled returns if chat should be available to mobile viewers.
+func (r *SqlConfigRepository) GetMobileChatEnabled() bool {
+	enabled, err := r.datastore.GetBool(mobileChatEnabledKey)
+	if err == nil {
+		return enabled
+	}
+
+	return true
+}
+
+// SetMobileExtraPageContentEnabled will persist the mobile extra content toggle state.
+func (r *SqlConfigRepository) SetMobileExtraPageContentEnabled(enabled bool) error {
+	return r.datastore.SetBool(mobileExtraPageContentEnabledKey, enabled)
+}
+
+// GetMobileExtraPageContentEnabled returns if extra content should be visible to mobile viewers.
+func (r *SqlConfigRepository) GetMobileExtraPageContentEnabled() bool {
+	enabled, err := r.datastore.GetBool(mobileExtraPageContentEnabledKey)
+	if err == nil {
+		return enabled
+	}
+
+	return true
+}
+
 // SetChatEstablishedUsersOnlyMode sets the state of established user only mode.
 func (r *SqlConfigRepository) SetChatEstablishedUsersOnlyMode(enabled bool) error {
 	return r.datastore.SetBool(chatEstablishedUsersOnlyModeKey, enabled)

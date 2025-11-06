@@ -66,6 +66,10 @@ type ConfigRepository interface {
 	SetStreamOutputVariants(variants []models.StreamOutputVariant) error
 	SetChatDisabled(disabled bool) error
 	GetChatDisabled() bool
+	SetMobileChatEnabled(enabled bool) error
+	GetMobileChatEnabled() bool
+	SetMobileExtraPageContentEnabled(enabled bool) error
+	GetMobileExtraPageContentEnabled() bool
 	SetChatEstablishedUsersOnlyMode(enabled bool) error
 	GetChatEstbalishedUsersOnlyMode() bool
 	SetChatSpamProtectionEnabled(enabled bool) error

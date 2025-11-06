@@ -73,6 +73,8 @@ const initialServerConfigState: ConfigDetails = {
   forbiddenUsernames: [],
   suggestedUsernames: [],
   chatDisabled: false,
+  mobileChatEnabled: true,
+  mobileExtraPageContentEnabled: true,
   chatSpamProtectionEnabled: true,
   chatSlurFilterEnabled: false,
   chatJoinMessagesEnabled: true,

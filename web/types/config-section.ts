@@ -158,6 +158,8 @@ export interface ConfigDetails {
   forbiddenUsernames: string[];
   suggestedUsernames: string[];
   chatDisabled: boolean;
+  mobileChatEnabled: boolean;
+  mobileExtraPageContentEnabled: boolean;
   chatSpamProtectionEnabled: boolean;
   chatSlurFilterEnabled: boolean;
   federation: Federation;

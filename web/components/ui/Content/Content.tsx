@@ -118,9 +118,16 @@ export const Content: FC = () => {
     externalActions,
     offlineMessage,
     chatDisabled,
+    mobileChatEnabled,
+    mobileExtraPageContentEnabled,
     federation,
     notifications,
   } = clientConfig;
+  const isMobileDevice = isMobile === true;
+  const mobileChatAllowed = mobileChatEnabled !== false;
+  const extraContentAllowedOnMobile = mobileExtraPageContentEnabled !== false;
+  const chatDisabledForDevice = chatDisabled || (isMobileDevice && !mobileChatAllowed);
+  const extraPageContentForMobile = extraContentAllowedOnMobile ? extraPageContent : '';
   const [showNotifyReminder, setShowNotifyReminder] = useState(false);
   const [showNotifyModal, setShowNotifyModal] = useState(false);
   const [showFollowModal, setShowFollowModal] = useState(false);
@@ -217,7 +224,13 @@ export const Content: FC = () => {
     setCurrentBrowserWindowUrl(window.location.href);
   }, []);
 
-  const showChat = isChatAvailable && !chatDisabled && chatState === ChatState.VISIBLE;
+  useEffect(() => {
+    if (isMobileDevice && !mobileChatAllowed && showChatModal) {
+      setShowChatModal(false);
+    }
+  }, [isMobileDevice, mobileChatAllowed, showChatModal]);
+
+  const showChat = isChatAvailable && !chatDisabledForDevice && chatState === ChatState.VISIBLE;
 
   return (
     <div className={styles.main}>
@@ -276,35 +289,35 @@ export const Content: FC = () => {
         >
           <BrowserNotifyModal />
         </Modal>
-        <section className={styles.contentSection}>
-          {!name && <Skeleton active loading style={{ marginLeft: '10vw', marginRight: '10vw' }} />}
-          {isMobile ? (
-            <div className={styles.card}>
-              <MobileContent
-                name={name}
-                summary={summary}
-                tags={tags}
-                socialHandles={socialHandles}
-                extraPageContent={extraPageContent}
-                setShowFollowModal={setShowFollowModal}
-                supportFediverseFeatures={supportFediverseFeatures}
-                online={online}
-              />
-            </div>
-          ) : (
-            <div className={classnames(desktopStyles.bottomSectionContent, styles.card)}>
-              <DesktopContent
-                name={name}
-                summary={summary}
-                tags={tags}
-                socialHandles={socialHandles}
-                extraPageContent={extraPageContent}
-                setShowFollowModal={setShowFollowModal}
-                supportFediverseFeatures={supportFediverseFeatures}
-              />
-            </div>
-          )}
-        </section>
+          <section className={styles.contentSection}>
+            {!name && <Skeleton active loading style={{ marginLeft: '10vw', marginRight: '10vw' }} />}
+            {isMobile ? (
+              <div className={styles.card}>
+                <MobileContent
+                  name={name}
+                  summary={summary}
+                  tags={tags}
+                  socialHandles={socialHandles}
+                  extraPageContent={extraPageContentForMobile}
+                  setShowFollowModal={setShowFollowModal}
+                  supportFediverseFeatures={supportFediverseFeatures}
+                  online={online}
+                />
+              </div>
+            ) : (
+              <div className={classnames(desktopStyles.bottomSectionContent, styles.card)}>
+                <DesktopContent
+                  name={name}
+                  summary={summary}
+                  tags={tags}
+                  socialHandles={socialHandles}
+                  extraPageContent={extraPageContent}
+                  setShowFollowModal={setShowFollowModal}
+                  supportFediverseFeatures={supportFediverseFeatures}
+                />
+              </div>
+            )}
+          </section>
         <div style={{ flex: '1 1' }} />
         <Footer />
       </div>
@@ -337,23 +350,23 @@ export const Content: FC = () => {
           handleClose={() => setShowFollowModal(false)}
         />
       </Modal>
-      {isMobile && showChatModal && chatState === ChatState.VISIBLE && (
-        <ChatModal
-          messages={messages}
-          currentUser={currentUser}
-          handleClose={() => setShowChatModal(false)}
-        />
-      )}
-      {isMobile && isChatAvailable && !chatDisabled && (
-        <Button
-          id="mobile-chat-button"
-          type="primary"
-          onClick={() => setShowChatModal(true)}
-          className={styles.floatingMobileChatModalButton}
-        >
-          Chat <MessageFilled />
-        </Button>
-      )}
+        {isMobile && mobileChatAllowed && showChatModal && chatState === ChatState.VISIBLE && (
+          <ChatModal
+            messages={messages}
+            currentUser={currentUser}
+            handleClose={() => setShowChatModal(false)}
+          />
+        )}
+        {isMobile && isChatAvailable && !chatDisabledForDevice && (
+          <Button
+            id="mobile-chat-button"
+            type="primary"
+            onClick={() => setShowChatModal(true)}
+            className={styles.floatingMobileChatModalButton}
+          >
+            Chat <MessageFilled />
+          </Button>
+        )}
     </div>
   );
 };

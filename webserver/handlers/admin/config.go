@@ -693,12 +693,72 @@ func SetChatDisabled(w http.ResponseWriter, r *http.Request) {
 	}
 
 	configRepository := configrepository.Get()
-	if err := configRepository.SetChatDisabled(configValue.Value.(bool)); err != nil {
+	disabled, ok := configValue.Value.(bool)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to read chat disabled flag")
+		return
+	}
+
+	if err := configRepository.SetChatDisabled(disabled); err != nil {
 		webutils.WriteSimpleResponse(w, false, err.Error())
 		return
 	}
 
 	webutils.WriteSimpleResponse(w, true, "chat disabled status updated")
+}
+
+// SetMobileChatEnabled toggles chat availability specifically for mobile viewers.
+func SetMobileChatEnabled(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		webutils.WriteSimpleResponse(w, false, "unable to update mobile chat setting")
+		return
+	}
+
+	enabled, ok := configValue.Value.(bool)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to read mobile chat flag")
+		return
+	}
+
+	configRepository := configrepository.Get()
+	if err := configRepository.SetMobileChatEnabled(enabled); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	webutils.WriteSimpleResponse(w, true, "mobile chat setting updated")
+}
+
+// SetMobileExtraPageContentEnabled toggles extra page content visibility for mobile viewers.
+func SetMobileExtraPageContentEnabled(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		webutils.WriteSimpleResponse(w, false, "unable to update mobile content setting")
+		return
+	}
+
+	enabled, ok := configValue.Value.(bool)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to read mobile content flag")
+		return
+	}
+
+	configRepository := configrepository.Get()
+	if err := configRepository.SetMobileExtraPageContentEnabled(enabled); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	webutils.WriteSimpleResponse(w, true, "mobile content setting updated")
 }
 
 // SetVideoCodec will change the codec used for video encoding.

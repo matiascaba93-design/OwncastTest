@@ -24,6 +24,8 @@ func (r *SqlConfigRepository) PopulateDefaults() {
 	_ = r.SetServerWelcomeMessage("")
 	_ = r.SetServerName(defaults.Name)
 	_ = r.SetExtraPageBodyContent(defaults.PageBodyContent)
+	_ = r.SetMobileChatEnabled(true)
+	_ = r.SetMobileExtraPageContentEnabled(true)
 	_ = r.SetFederationGoLiveMessage(defaults.FederationGoLiveMessage)
 	_ = r.SetSocialHandles([]models.SocialHandle{
 		{

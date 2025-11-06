@@ -23,6 +23,7 @@ While these definitions and lists should not be seen as exhaustive, in theory, o
 - Low barrier to entry.
 - Empowering.
 - Customizable and hackable.
+- Device-aware, allowing chat and custom content to be toggled separately for mobile viewers.
 
 ## Primary Users
 

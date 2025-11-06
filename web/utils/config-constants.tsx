@@ -45,6 +45,8 @@ const API_DISABLE_SEARCH_INDEXING = '/disablesearchindexing';
 const API_SOCKET_HOST_OVERRIDE = '/sockethostoverride';
 const API_VIDEO_SERVING_ENDPOINT = '/videoservingendpoint';
 const API_RECORDING_ENABLED = '/recording';
+const API_MOBILE_CHAT_ENABLED = '/mobile/chat/enabled';
+const API_MOBILE_EXTRA_PAGE_CONTENT_ENABLED = '/mobile/extrapagecontent/enabled';
 
 // Federation
 const API_FEDERATION_ENABLED = '/federation/enable';
@@ -256,6 +258,22 @@ export const FIELD_PROPS_RECORDING_ENABLED = {
   configPath: '',
   label: 'Record stream to server',
   tip: 'When enabled, Owncast will save a copy of each broadcast as an MP4 in the recordings tab so you can review or download it later.',
+};
+
+export const FIELD_PROPS_MOBILE_CHAT_ENABLED = {
+  apiPath: API_MOBILE_CHAT_ENABLED,
+  configPath: '',
+  label: 'Chat on mobile',
+  tip: 'Allow viewers on mobile devices to access the chat interface.',
+  useSubmit: true,
+};
+
+export const FIELD_PROPS_MOBILE_EXTRA_CONTENT_ENABLED = {
+  apiPath: API_MOBILE_EXTRA_PAGE_CONTENT_ENABLED,
+  configPath: '',
+  label: 'Custom content on mobile',
+  tip: 'Show extra page content to viewers on mobile devices.',
+  useSubmit: true,
 };
 
 export const DEFAULT_VARIANT_STATE: VideoVariant = {
