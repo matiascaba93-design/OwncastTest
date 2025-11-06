@@ -59,11 +59,18 @@ git rev-parse --abbrev-ref HEAD   # cursor/enhance-owncast-for-private-wedding-l
 Version?2 includes the recorder/player fixes. Always regenerate the static bundle before compiling Go.
 
 ```bash
-cd /opt/owncast-private/owncast
-./build/web/bundleWeb.sh
+cd /opt/owncast-private/owncast/web
+npx prettier --write components/ui/Footer/Footer.tsx
+npm install
+npm run build
+npx next export
+
+cd ..
+rm -rf static/web
+mv web/out static/web
 ```
 
-> Tip: Append `--offline` to the script if you want to skip `npm install` on repeat builds.
+> Tip: If you already have `node_modules`, you can skip `npm install`. Always run `npx next export` after `npm run build`; there is no `npm run export` script in this project.
 
 ### 6. Build the Owncast Binary
 
