@@ -1,0 +1,292 @@
+COMPLETE CHANGES LIST - OWNCAST MOBILE TOGGLES IMPLEMENTATION
+================================================================
+
+Date: November 6, 2025
+Branch: cursor/enhance-owncast-for-private-wedding-livestreams-4c9e
+Repository: matiascaba93-design/OwncastTest
+Commit: 23a4b40d2 - "feat: Add device-aware chat and content toggles"
+
+================================================================
+SUMMARY OF ALL CHANGES
+================================================================
+
+We implemented mobile-specific toggles for chat and extra page content in Owncast.
+This allows administrators to independently control whether chat and custom content
+are visible to mobile viewers, separate from desktop settings.
+
+Total Files Modified: 16
+Total Lines Added: ~367
+Total Lines Removed: ~194
+
+================================================================
+DETAILED FILE-BY-FILE CHANGES
+================================================================
+
+1. persistence/configrepository/configkeys.go
+   - Added: mobileChatEnabledKey = "mobile_chat_enabled"
+   - Added: mobileExtraPageContentEnabledKey = "mobile_extra_page_content_enabled"
+   - Purpose: New configuration keys for storing mobile toggle states
+
+2. persistence/configrepository/configrepository.go
+   - Added interface methods:
+     * SetMobileChatEnabled(enabled bool) error
+     * GetMobileChatEnabled() bool
+     * SetMobileExtraPageContentEnabled(enabled bool) error
+     * GetMobileExtraPageContentEnabled() bool
+   - Purpose: Interface definitions for mobile toggle operations
+
+3. persistence/configrepository/sqlconfigrepository.go
+   - Added: SetMobileChatEnabled() implementation
+     * Persists mobile chat toggle state to database
+     * Returns error if database operation fails
+   - Added: GetMobileChatEnabled() implementation
+     * Retrieves mobile chat toggle state from database
+     * Returns true by default if not set
+   - Added: SetMobileExtraPageContentEnabled() implementation
+     * Persists mobile extra content toggle state to database
+     * Returns error if database operation fails
+   - Added: GetMobileExtraPageContentEnabled() implementation
+     * Retrieves mobile extra content toggle state from database
+     * Returns true by default if not set
+   - Purpose: Database persistence layer for mobile toggles
+
+4. persistence/configrepository/defaults.go
+   - Added: _ = r.SetMobileChatEnabled(true)
+   - Added: _ = r.SetMobileExtraPageContentEnabled(true)
+   - Purpose: Initialize mobile toggles to enabled by default
+
+5. webserver/handlers/admin/config.go
+   - Added: SetMobileChatEnabled() handler function
+     * Handles POST requests to /api/admin/config/mobile/chat/enabled
+     * Validates request body contains boolean value
+     * Calls config repository to persist the setting
+     * Returns success/error response
+   - Added: SetMobileExtraPageContentEnabled() handler function
+     * Handles POST requests to /api/admin/config/mobile/extrapagecontent/enabled
+     * Validates request body contains boolean value
+     * Calls config repository to persist the setting
+     * Returns success/error response
+   - Purpose: Admin API endpoints for updating mobile toggle settings
+
+6. webserver/handlers/admin/serverConfig.go
+   - Added to serverConfigAdminResponse struct:
+     * MobileChatEnabled bool `json:"mobileChatEnabled"`
+     * MobileExtraPageContentEnabled bool `json:"mobileExtraPageContentEnabled"`
+   - Added to GetServerConfig() response:
+     * MobileChatEnabled: configRepository.GetMobileChatEnabled()
+     * MobileExtraPageContentEnabled: configRepository.GetMobileExtraPageContentEnabled()
+   - Purpose: Include mobile toggle states in admin config API response
+
+7. webserver/handlers/config.go
+   - Added to webConfigResponse struct:
+     * MobileChatEnabled bool `json:"mobileChatEnabled"`
+     * MobileExtraPageContentEnabled bool `json:"mobileExtraPageContentEnabled"`
+   - Added to getConfigResponse() function:
+     * MobileChatEnabled: configRepository.GetMobileChatEnabled()
+     * MobileExtraPageContentEnabled: configRepository.GetMobileExtraPageContentEnabled()
+   - Purpose: Include mobile toggle states in public client config API response
+
+8. webserver/router/router.go
+   - Added routes:
+     * POST /api/admin/config/mobile/chat/enabled
+     * OPTIONS /api/admin/config/mobile/chat/enabled
+     * POST /api/admin/config/mobile/extrapagecontent/enabled
+     * OPTIONS /api/admin/config/mobile/extrapagecontent/enabled
+   - All routes require admin authentication via middleware.RequireAdminAuth()
+   - Purpose: Route definitions for mobile toggle API endpoints
+
+9. web/components/admin/EditInstanceDetails2.tsx
+   - Added imports:
+     * FIELD_PROPS_MOBILE_CHAT_ENABLED
+     * FIELD_PROPS_MOBILE_EXTRA_CONTENT_ENABLED
+   - Added to destructured serverConfig:
+     * mobileChatEnabled
+     * mobileExtraPageContentEnabled
+   - Added two new ToggleSwitch components:
+     * "Chat on mobile" toggle
+     * "Custom content on mobile" toggle
+   - Both toggles appear after the "Record stream to server" toggle
+   - Purpose: Admin UI controls for mobile toggles
+
+10. web/utils/config-constants.tsx
+    - Added API endpoint constants:
+      * API_MOBILE_CHAT_ENABLED = '/mobile/chat/enabled'
+      * API_MOBILE_EXTRA_PAGE_CONTENT_ENABLED = '/mobile/extrapagecontent/enabled'
+    - Added field props:
+      * FIELD_PROPS_MOBILE_CHAT_ENABLED
+        - apiPath: API_MOBILE_CHAT_ENABLED
+        - label: 'Chat on mobile'
+        - tip: 'Allow viewers on mobile devices to access the chat interface.'
+        - useSubmit: true
+      * FIELD_PROPS_MOBILE_EXTRA_CONTENT_ENABLED
+        - apiPath: API_MOBILE_EXTRA_PAGE_CONTENT_ENABLED
+        - label: 'Custom content on mobile'
+        - tip: 'Show extra page content to viewers on mobile devices.'
+        - useSubmit: true
+    - Purpose: Configuration constants for mobile toggle UI components
+
+11. web/components/ui/Content/Content.tsx
+    - Added to destructured clientConfig:
+      * mobileChatEnabled
+      * mobileExtraPageContentEnabled
+    - Added mobile device detection logic:
+      * const isMobileDevice = isMobile === true;
+      * const mobileChatAllowed = mobileChatEnabled !== false;
+      * const extraContentAllowedOnMobile = mobileExtraPageContentEnabled !== false;
+    - Added chat disabled logic for mobile:
+      * const chatDisabledForDevice = chatDisabled || (isMobileDevice && !mobileChatAllowed);
+    - Added extra content filtering for mobile:
+      * const extraPageContentForMobile = extraContentAllowedOnMobile ? extraPageContent : '';
+    - Updated showChat calculation:
+      * Changed from: isChatAvailable && !chatDisabled
+      * Changed to: isChatAvailable && !chatDisabledForDevice
+    - Updated MobileContent component:
+      * Changed extraPageContent prop to extraPageContentForMobile
+    - Updated mobile chat modal visibility:
+      * Changed from: isMobile && showChatModal && chatState === ChatState.VISIBLE
+      * Changed to: isMobile && mobileChatAllowed && showChatModal && chatState === ChatState.VISIBLE
+    - Updated mobile chat button visibility:
+      * Changed from: isMobile && isChatAvailable && !chatDisabled
+      * Changed to: isMobile && isChatAvailable && !chatDisabledForDevice
+    - Added useEffect to close chat modal if mobile chat is disabled:
+      * Closes chat modal when mobile chat is disabled while modal is open
+    - Purpose: Client-side logic to respect mobile toggle settings
+
+12. web/components/ui/Header/Header.tsx
+    - Added imports:
+      * useRecoilValue from 'recoil'
+      * clientConfigStateAtom, isMobileAtom from ClientConfigStore
+    - Added mobile device detection:
+      * const isMobile = useRecoilValue(isMobileAtom);
+      * const { mobileChatEnabled } = useRecoilValue(clientConfigStateAtom);
+      * const isMobileDevice = isMobile === true;
+      * const mobileChatAllowed = mobileChatEnabled !== false;
+      * const chatDisabledForDevice = chatDisabled || (isMobileDevice && !mobileChatAllowed);
+    - Updated chat dropdown visibility:
+      * Changed from: chatAvailable && !chatDisabled
+      * Changed to: chatAvailable && !chatDisabledForDevice
+    - Updated chat offline message visibility:
+      * Changed from: !chatAvailable && !chatDisabled
+      * Changed to: !chatAvailable && !chatDisabledForDevice
+    - Purpose: Header respects mobile chat toggle settings
+
+13. web/interfaces/client-config.model.ts
+    - Added to ClientConfig interface:
+      * mobileChatEnabled: boolean;
+      * mobileExtraPageContentEnabled: boolean;
+    - Added to makeEmptyClientConfig() default values:
+      * mobileChatEnabled: true,
+      * mobileExtraPageContentEnabled: true,
+    - Purpose: TypeScript type definitions for mobile toggles
+
+14. web/types/config-section.ts
+    - Added to ConfigDetails interface:
+      * mobileChatEnabled: boolean;
+      * mobileExtraPageContentEnabled: boolean;
+    - Purpose: TypeScript type definitions for admin config
+
+15. web/utils/server-status-context.tsx
+    - Added to initialServerConfigState:
+      * mobileChatEnabled: true,
+      * mobileExtraPageContentEnabled: true,
+    - Purpose: Default state values for mobile toggles in admin UI
+
+16. docs/product-definition.md
+    - Added to Primary Goals section:
+      * "Device-aware, allowing chat and custom content to be toggled separately for mobile viewers."
+    - Purpose: Documentation update describing new feature
+
+================================================================
+ADDITIONAL WORK DONE
+================================================================
+
+1. Recording Issue Investigation
+   - Investigated recording finalization errors
+   - Provided troubleshooting steps for FFmpeg path verification
+   - Provided troubleshooting steps for recordings directory setup
+   - Identified that recordings directory may not exist by default
+   - Suggested manual FFmpeg command testing
+
+2. Documentation Created
+   - Created MOBILE_TOGGLES_IMPLEMENTATION_SUMMARY.md
+   - Created COMPLETE_CHANGES_LIST.txt (this file)
+   - Provided comprehensive documentation for handoff to new agent
+
+3. Git Repository Management
+   - Verified commit exists on fork: matiascaba93-design/OwncastTest
+   - Confirmed branch: cursor/enhance-owncast-for-private-wedding-livestreams-4c9e
+   - Verified all changes are pushed to remote repository
+
+================================================================
+TECHNICAL DETAILS
+================================================================
+
+Default Values:
+- mobileChatEnabled: true (enabled by default)
+- mobileExtraPageContentEnabled: true (enabled by default)
+
+Database Keys:
+- mobile_chat_enabled (boolean)
+- mobile_extra_page_content_enabled (boolean)
+
+API Endpoints:
+- POST /api/admin/config/mobile/chat/enabled
+  Body: {"value": true} or {"value": false}
+  Requires: Admin authentication
+  
+- POST /api/admin/config/mobile/extrapagecontent/enabled
+  Body: {"value": true} or {"value": false}
+  Requires: Admin authentication
+
+Client Config Response:
+- GET /api/config includes:
+  * mobileChatEnabled: boolean
+  * mobileExtraPageContentEnabled: boolean
+
+Admin Config Response:
+- GET /api/admin/serverconfig includes:
+  * mobileChatEnabled: boolean
+  * mobileExtraPageContentEnabled: boolean
+
+================================================================
+TESTING NOTES
+================================================================
+
+To test the implementation:
+
+1. Admin UI:
+   - Navigate to Configuration ? Server ? Instance Details
+   - Verify "Chat on mobile" toggle appears
+   - Verify "Custom content on mobile" toggle appears
+   - Toggle both settings and verify they persist
+
+2. Mobile Client:
+   - Open stream on mobile device (or resize browser to mobile width)
+   - With mobile chat enabled: chat button should appear
+   - With mobile chat disabled: chat button should NOT appear
+   - With mobile content enabled: extra page content should be visible
+   - With mobile content disabled: extra page content should NOT be visible
+
+3. Desktop Client:
+   - Open stream on desktop
+   - Chat should work regardless of mobile chat toggle
+   - Extra content should work regardless of mobile content toggle
+
+================================================================
+KNOWN ISSUES / LIMITATIONS
+================================================================
+
+None identified at this time.
+
+================================================================
+NEXT STEPS FOR NEW AGENT
+================================================================
+
+1. Verify commit 23a4b40d2 exists in fork
+2. Test implementation using checklist above
+3. If creating private repo, clone fork and push to private repository
+4. Continue development from this point
+
+================================================================
+END OF CHANGES LIST
+================================================================
