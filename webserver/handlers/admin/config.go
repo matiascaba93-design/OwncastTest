@@ -14,6 +14,7 @@ import (
 	"github.com/owncast/owncast/activitypub/outbox"
 	"github.com/owncast/owncast/core"
 	"github.com/owncast/owncast/core/chat"
+	"github.com/owncast/owncast/core/viewerauth"
 	"github.com/owncast/owncast/core/webhooks"
 	"github.com/owncast/owncast/models"
 	"github.com/owncast/owncast/persistence/configrepository"
@@ -227,6 +228,68 @@ func SetAdminPassword(w http.ResponseWriter, r *http.Request) {
 
 	configRepository := configrepository.Get()
 	if err := configRepository.SetAdminPassword(configValue.Value.(string)); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	webutils.WriteSimpleResponse(w, true, "changed")
+}
+
+// SetViewerAccessPassword sets or clears the viewer-facing password.
+func SetViewerAccessPassword(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		return
+	}
+
+	password, ok := configValue.Value.(string)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to read password value")
+		return
+	}
+
+	configRepository := configrepository.Get()
+	trimmed := strings.TrimSpace(password)
+
+	var err error
+	if trimmed == "" {
+		err = configRepository.ClearViewerAccessPassword()
+	} else {
+		err = configRepository.SetViewerAccessPassword(trimmed)
+	}
+
+	if err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	viewerauth.InvalidateAllSessions()
+	webutils.WriteSimpleResponse(w, true, "changed")
+}
+
+// SetRecordingEnabled toggles automatic stream recording support.
+func SetRecordingEnabled(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		return
+	}
+
+	enabled, ok := configValue.Value.(bool)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to parse recording flag")
+		return
+	}
+
+	configRepository := configrepository.Get()
+	if err := configRepository.SetRecordingEnabled(enabled); err != nil {
 		webutils.WriteSimpleResponse(w, false, err.Error())
 		return
 	}
@@ -630,12 +693,72 @@ func SetChatDisabled(w http.ResponseWriter, r *http.Request) {
 	}
 
 	configRepository := configrepository.Get()
-	if err := configRepository.SetChatDisabled(configValue.Value.(bool)); err != nil {
+	disabled, ok := configValue.Value.(bool)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to read chat disabled flag")
+		return
+	}
+
+	if err := configRepository.SetChatDisabled(disabled); err != nil {
 		webutils.WriteSimpleResponse(w, false, err.Error())
 		return
 	}
 
 	webutils.WriteSimpleResponse(w, true, "chat disabled status updated")
+}
+
+// SetMobileChatEnabled toggles chat availability specifically for mobile viewers.
+func SetMobileChatEnabled(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		webutils.WriteSimpleResponse(w, false, "unable to update mobile chat setting")
+		return
+	}
+
+	enabled, ok := configValue.Value.(bool)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to read mobile chat flag")
+		return
+	}
+
+	configRepository := configrepository.Get()
+	if err := configRepository.SetMobileChatEnabled(enabled); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	webutils.WriteSimpleResponse(w, true, "mobile chat setting updated")
+}
+
+// SetMobileExtraPageContentEnabled toggles extra page content visibility for mobile viewers.
+func SetMobileExtraPageContentEnabled(w http.ResponseWriter, r *http.Request) {
+	if !requirePOST(w, r) {
+		return
+	}
+
+	configValue, success := getValueFromRequest(w, r)
+	if !success {
+		webutils.WriteSimpleResponse(w, false, "unable to update mobile content setting")
+		return
+	}
+
+	enabled, ok := configValue.Value.(bool)
+	if !ok {
+		webutils.WriteSimpleResponse(w, false, "unable to read mobile content flag")
+		return
+	}
+
+	configRepository := configrepository.Get()
+	if err := configRepository.SetMobileExtraPageContentEnabled(enabled); err != nil {
+		webutils.WriteSimpleResponse(w, false, err.Error())
+		return
+	}
+
+	webutils.WriteSimpleResponse(w, true, "mobile content setting updated")
 }
 
 // SetVideoCodec will change the codec used for video encoding.

@@ -25,6 +25,9 @@ var (
 	// HLSStoragePath is the directory HLS video is written to.
 	HLSStoragePath = filepath.Join(DataDirectory, "hls")
 
+	// RecordingsStoragePath is where finalized recordings are stored.
+	RecordingsStoragePath = filepath.Join(DataDirectory, "recordings")
+
 	// CustomEmojiPath is the emoji directory.
 	CustomEmojiPath = filepath.Join(DataDirectory, "emoji")
 

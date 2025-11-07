@@ -19,6 +19,7 @@ import (
 	"github.com/owncast/owncast/core/chat"
 	"github.com/owncast/owncast/core/data"
 	"github.com/owncast/owncast/webserver/handlers"
+	adminhandlers "github.com/owncast/owncast/webserver/handlers/admin"
 	"github.com/owncast/owncast/webserver/router/middleware"
 )
 
@@ -56,6 +57,26 @@ func Start(enableVerboseLogging bool) error {
 
 	// The primary web app.
 	r.HandleFunc("/*", handlers.IndexHandler)
+
+	// Viewer authentication endpoints
+	r.Route("/api/viewer", func(c chi.Router) {
+		c.Post("/auth", handlers.ViewerAuthenticate)
+		c.Post("/logout", handlers.ViewerLogout)
+		c.Get("/status", handlers.ViewerAuthStatus)
+	})
+
+	// Admin viewer auth configuration endpoints
+	r.MethodFunc(http.MethodPost, "/api/admin/config/viewerpass", middleware.RequireAdminAuth(adminhandlers.SetViewerAccessPassword))
+	r.MethodFunc(http.MethodOptions, "/api/admin/config/viewerpass", middleware.RequireAdminAuth(adminhandlers.SetViewerAccessPassword))
+	r.MethodFunc(http.MethodPost, "/api/admin/config/recording", middleware.RequireAdminAuth(adminhandlers.SetRecordingEnabled))
+	r.MethodFunc(http.MethodOptions, "/api/admin/config/recording", middleware.RequireAdminAuth(adminhandlers.SetRecordingEnabled))
+	r.MethodFunc(http.MethodPost, "/api/admin/config/mobile/chat/enabled", middleware.RequireAdminAuth(adminhandlers.SetMobileChatEnabled))
+	r.MethodFunc(http.MethodOptions, "/api/admin/config/mobile/chat/enabled", middleware.RequireAdminAuth(adminhandlers.SetMobileChatEnabled))
+	r.MethodFunc(http.MethodPost, "/api/admin/config/mobile/extrapagecontent/enabled", middleware.RequireAdminAuth(adminhandlers.SetMobileExtraPageContentEnabled))
+	r.MethodFunc(http.MethodOptions, "/api/admin/config/mobile/extrapagecontent/enabled", middleware.RequireAdminAuth(adminhandlers.SetMobileExtraPageContentEnabled))
+	r.MethodFunc(http.MethodGet, "/api/admin/recordings", middleware.RequireAdminAuth(adminhandlers.ListRecordings))
+	r.MethodFunc(http.MethodGet, "/api/admin/recordings/{filename}", middleware.RequireAdminAuth(adminhandlers.DownloadRecording))
+	r.MethodFunc(http.MethodDelete, "/api/admin/recordings/{filename}", middleware.RequireAdminAuth(adminhandlers.DeleteRecording))
 
 	// mount the api
 	r.Mount("/api/", handlers.New().Handler())

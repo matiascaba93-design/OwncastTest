@@ -42,6 +42,8 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
   const playerRef = React.useRef(null);
   const [videoPlaying, setVideoPlaying] = useRecoilState<boolean>(isVideoPlayingAtom);
   const clockSkew = useRecoilValue<Number>(clockSkewAtom);
+  const lastOnlineRef = React.useRef<boolean>(online);
+  const lastAppliedSourceRef = React.useRef<string | null>(null);
 
   const setSavedVolume = () => {
     try {
@@ -280,6 +282,36 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
     }
   }, [clockSkew]);
 
+  useEffect(() => {
+    if (!playerRef.current) {
+      lastOnlineRef.current = online;
+      return;
+    }
+
+    if (online) {
+      if (!lastOnlineRef.current || lastAppliedSourceRef.current !== source) {
+        const cacheBustedSource = `${source}${source.includes('?') ? '&' : '?'}cb=${Date.now()}`;
+        playerRef.current.src({ src: cacheBustedSource, type: 'application/x-mpegURL' });
+        playerRef.current.load();
+        lastAppliedSourceRef.current = source;
+      }
+
+      const playPromise = playerRef.current.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          // Autoplay might be blocked; the viewer can press play manually.
+        });
+      }
+    } else {
+      playerRef.current.pause();
+      playerRef.current.currentTime(0);
+      setVideoPlaying(false);
+      lastAppliedSourceRef.current = null;
+    }
+
+    lastOnlineRef.current = online;
+  }, [online, source]);
+
   useEffect(
     () => () => {
       stopLatencyCompensator();
@@ -300,14 +332,12 @@ export const OwncastPlayer: FC<OwncastPlayerProps> = ({
       )}
     >
       <div className={classNames(styles.container, className)} id="player">
-        {online && (
-          <div className={styles.player}>
-            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} aria-label={title} />
-          </div>
-        )}
-        <div className={styles.poster}>
-          {!videoPlaying && (
-            <VideoPoster online={online} initialSrc="/thumbnail.jpg" src="/thumbnail.jpg" />
+        <div className={styles.player}>
+          <VideoJS options={videoJsOptions} onReady={handlePlayerReady} aria-label={title} />
+          {(!videoPlaying || !online) && (
+            <div className={styles.poster}>
+              <VideoPoster online={online} initialSrc="/thumbnail.jpg" src="/thumbnail.jpg" />
+            </div>
           )}
         </div>
       </div>

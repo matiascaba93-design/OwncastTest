@@ -31,6 +31,7 @@ const API_SERVER_SUMMARY = '/serversummary';
 const API_SERVER_WELCOME_MESSAGE = '/welcomemessage';
 const API_SERVER_NAME = '/name';
 const API_STREAM_KEY = '/adminpass';
+const API_VIEWER_PASSWORD = '/viewerpass';
 const API_STREAM_TITLE = '/streamtitle';
 const API_TAGS = '/tags';
 const API_WEB_PORT = '/webserverport';
@@ -43,6 +44,9 @@ const API_CHAT_SLUR_FILTER_ENABLED = '/chat/slurfilterenabled';
 const API_DISABLE_SEARCH_INDEXING = '/disablesearchindexing';
 const API_SOCKET_HOST_OVERRIDE = '/sockethostoverride';
 const API_VIDEO_SERVING_ENDPOINT = '/videoservingendpoint';
+const API_RECORDING_ENABLED = '/recording';
+const API_MOBILE_CHAT_ENABLED = '/mobile/chat/enabled';
+const API_MOBILE_EXTRA_PAGE_CONTENT_ENABLED = '/mobile/extrapagecontent/enabled';
 
 // Federation
 const API_FEDERATION_ENABLED = '/federation/enable';
@@ -134,6 +138,15 @@ export const TEXTFIELD_PROPS_ADMIN_PASSWORD = {
   tip: 'Save this password somewhere safe, you will need it to login to the admin dashboard!',
   required: true,
   hasComplexityRequirements: true,
+};
+
+export const TEXTFIELD_PROPS_VIEWER_PASSWORD = {
+  apiPath: API_VIEWER_PASSWORD,
+  configPath: 'viewerAccess',
+  maxLength: TEXT_MAXLENGTH,
+  placeholder: 'Leave blank to disable',
+  label: 'Viewer Password',
+  tip: 'Optional password required to watch the stream. Update with a new value before each event or clear it to disable access control.',
 };
 export const TEXTFIELD_PROPS_FFMPEG = {
   apiPath: API_FFMPEG,
@@ -238,6 +251,29 @@ export const FIELD_PROPS_DISABLE_SEARCH_INDEXING = {
   configPath: '',
   label: 'Disable search engine indexing',
   tip: 'Turn this ON to ask search engines to not index this site.',
+};
+
+export const FIELD_PROPS_RECORDING_ENABLED = {
+  apiPath: API_RECORDING_ENABLED,
+  configPath: '',
+  label: 'Record stream to server',
+  tip: 'When enabled, Owncast will save a copy of each broadcast as an MP4 in the recordings tab so you can review or download it later.',
+};
+
+export const FIELD_PROPS_MOBILE_CHAT_ENABLED = {
+  apiPath: API_MOBILE_CHAT_ENABLED,
+  configPath: '',
+  label: 'Chat on mobile',
+  tip: 'Allow viewers on mobile devices to access the chat interface.',
+  useSubmit: true,
+};
+
+export const FIELD_PROPS_MOBILE_EXTRA_CONTENT_ENABLED = {
+  apiPath: API_MOBILE_EXTRA_PAGE_CONTENT_ENABLED,
+  configPath: '',
+  label: 'Custom content on mobile',
+  tip: 'Show extra page content to viewers on mobile devices.',
+  useSubmit: true,
 };
 
 export const DEFAULT_VARIANT_STATE: VideoVariant = {

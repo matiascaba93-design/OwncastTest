@@ -12,6 +12,8 @@
   flex-direction: column;
   flex: 1 1 auto;
   overflow: auto;
+  padding: calc(var(--content-padding) * 1.5) var(--content-padding);
+  gap: 24px;
 }
 
 .mainColumn::-webkit-scrollbar,
@@ -44,14 +46,40 @@
   }
 }
 
-.topSectionElement {
-  background-color: var(--theme-color-components-video-background);
+.videoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  @include screen(tablet) {
-    // "sticks" the stream to the top of the page
-    position: sticky;
-    z-index: 100;
-  }
+.videoSkeleton {
+  height: min(62vh, 720px);
+  width: 100%;
+  background: var(--theme-color-components-video-background);
+  border-radius: 12px;
+}
+
+.card {
+  background: var(--theme-color-components-content-background);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.statusSection {
+  display: flex;
+}
+
+.actionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .offlineBanner {

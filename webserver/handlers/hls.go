@@ -9,6 +9,7 @@ import (
 
 	"github.com/owncast/owncast/config"
 	"github.com/owncast/owncast/core"
+	"github.com/owncast/owncast/core/viewerauth"
 	"github.com/owncast/owncast/models"
 	"github.com/owncast/owncast/persistence/configrepository"
 	"github.com/owncast/owncast/utils"
@@ -17,6 +18,10 @@ import (
 
 // HandleHLSRequest will manage all requests to HLS content.
 func HandleHLSRequest(w http.ResponseWriter, r *http.Request) {
+	if !viewerauth.RequireValidSessionOrStatus(w, r, http.StatusUnauthorized) {
+		return
+	}
+
 	// Sanity check to limit requests to HLS file types.
 	if filepath.Ext(r.URL.Path) != ".m3u8" && filepath.Ext(r.URL.Path) != ".ts" {
 		w.WriteHeader(http.StatusNotFound)

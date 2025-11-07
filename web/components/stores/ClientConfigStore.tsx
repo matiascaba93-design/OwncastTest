@@ -24,6 +24,7 @@ import {
   FediverseEvent,
 } from '../../interfaces/socket-events';
 import { mergeMeta } from '../../utils/helpers';
+import { ViewerAuthRequiredError } from '../../utils/errors';
 import { handleConnectedClientInfoMessage } from './eventhandlers/connected-client-info-handler';
 import { ServerStatusServiceContext } from '../../services/status-service';
 import { handleNameChangeEvent } from './eventhandlers/handleNameChangeEvent';
@@ -109,6 +110,17 @@ const removedMessageIdsAtom = atom<string[]>({
   default: [],
 });
 
+export enum ViewerAccessState {
+  Unknown = 'UNKNOWN',
+  Authorized = 'AUTHORIZED',
+  Required = 'REQUIRED',
+}
+
+export const viewerAccessStateAtom = atom<ViewerAccessState>({
+  key: 'viewerAccessState',
+  default: ViewerAccessState.Unknown,
+});
+
 export const isChatAvailableSelector = selector({
   key: 'isChatAvailableSelector',
   get: ({ get }) => {
@@ -175,6 +187,7 @@ export const ClientConfigStore: FC = () => {
   const setGlobalFatalErrorMessage = useSetRecoilState<DisplayableError>(fatalErrorStateAtom);
   const setWebsocketService = useSetRecoilState<WebsocketService>(websocketServiceAtom);
   const setHiddenMessageIds = useSetRecoilState<string[]>(removedMessageIdsAtom);
+  const [viewerAccessState, setViewerAccessState] = useRecoilState(viewerAccessStateAtom);
   const [hasLoadedConfig, setHasLoadedConfig] = useState(false);
 
   let ws: WebsocketService;
@@ -215,9 +228,15 @@ export const ClientConfigStore: FC = () => {
       setClientConfig(config);
       setGlobalFatalErrorMessage(null);
       setHasLoadedConfig(true);
+      setViewerAccessState(ViewerAccessState.Authorized);
     } catch (error) {
-      setGlobalFatalError('Unable to reach Owncast server', serverConnectivityError);
-      console.error(`ClientConfigService -> getConfig() ERROR: \n`, error);
+      if (error instanceof ViewerAuthRequiredError) {
+        setViewerAccessState(ViewerAccessState.Required);
+        setHasLoadedConfig(false);
+      } else {
+        setGlobalFatalError('Unable to reach Owncast server', serverConnectivityError);
+        console.error(`ClientConfigService -> getConfig() ERROR: \n`, error);
+      }
     }
   };
 
@@ -233,10 +252,15 @@ export const ClientConfigStore: FC = () => {
       setClockSkew(clockSkew);
 
       setGlobalFatalErrorMessage(null);
+      setViewerAccessState(ViewerAccessState.Authorized);
     } catch (error) {
-      sendEvent([AppStateEvent.Fail]);
-      setGlobalFatalError('Unable to reach Owncast server', serverConnectivityError);
-      console.error(`serverStatusState -> getStatus() ERROR: \n`, error);
+      if (error instanceof ViewerAuthRequiredError) {
+        setViewerAccessState(ViewerAccessState.Required);
+      } else {
+        sendEvent([AppStateEvent.Fail]);
+        setGlobalFatalError('Unable to reach Owncast server', serverConnectivityError);
+        console.error(`serverStatusState -> getStatus() ERROR: \n`, error);
+      }
     }
   };
 
@@ -397,6 +421,7 @@ export const ClientConfigStore: FC = () => {
         const config = JSON.parse((window as any).configHydration);
         setClientConfig(config);
         setHasLoadedConfig(true);
+        setViewerAccessState(ViewerAccessState.Authorized);
       }
     } catch (e) {
       console.error('Error parsing config hydration', e);
@@ -422,6 +447,10 @@ export const ClientConfigStore: FC = () => {
   }, []);
 
   useEffect(() => {
+    if (viewerAccessState !== ViewerAccessState.Authorized) {
+      return;
+    }
+
     if (clientConfig.chatDisabled) {
       return;
     }
@@ -439,16 +468,29 @@ export const ClientConfigStore: FC = () => {
     }
 
     startChat();
-  }, [hasLoadedConfig, accessToken]);
+  }, [hasLoadedConfig, accessToken, viewerAccessState]);
 
   useEffect(() => {
     if (!(window as any).configHydration) {
       updateClientConfig();
     }
-    handleUserRegistration();
     if (!(window as any).statusHydration) {
       updateServerStatus();
     }
+  }, []);
+
+  useEffect(() => {
+    if (viewerAccessState !== ViewerAccessState.Authorized) {
+      clearInterval(serverStatusRefreshPoll);
+      return () => {
+        clearInterval(serverStatusRefreshPoll);
+      };
+    }
+
+    handleUserRegistration();
+    updateClientConfig();
+    updateServerStatus();
+
     clearInterval(serverStatusRefreshPoll);
     serverStatusRefreshPoll = setInterval(() => {
       updateServerStatus();
@@ -457,7 +499,7 @@ export const ClientConfigStore: FC = () => {
     return () => {
       clearInterval(serverStatusRefreshPoll);
     };
-  }, []);
+  }, [viewerAccessState]);
 
   useEffect(() => {
     if (accessToken) {

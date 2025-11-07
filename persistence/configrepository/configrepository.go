@@ -15,6 +15,11 @@ type ConfigRepository interface {
 	SetStreamTitle(title string) error
 	GetAdminPassword() string
 	SetAdminPassword(key string) error
+	GetViewerAccessPassword() string
+	SetViewerAccessPassword(key string) error
+	ClearViewerAccessPassword() error
+	GetRecordingEnabled() bool
+	SetRecordingEnabled(enabled bool) error
 	GetLogoPath() string
 	SetLogoPath(logo string) error
 	SetLogoUniquenessString(uniqueness string) error
@@ -61,6 +66,10 @@ type ConfigRepository interface {
 	SetStreamOutputVariants(variants []models.StreamOutputVariant) error
 	SetChatDisabled(disabled bool) error
 	GetChatDisabled() bool
+	SetMobileChatEnabled(enabled bool) error
+	GetMobileChatEnabled() bool
+	SetMobileExtraPageContentEnabled(enabled bool) error
+	GetMobileExtraPageContentEnabled() bool
 	SetChatEstablishedUsersOnlyMode(enabled bool) error
 	GetChatEstbalishedUsersOnlyMode() bool
 	SetChatSpamProtectionEnabled(enabled bool) error

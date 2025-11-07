@@ -1,11 +1,13 @@
 import { Tooltip, Avatar } from 'antd';
 import { FC, useEffect, useState } from 'react';
+import { useRecoilValue } from 'recoil';
 import cn from 'classnames';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useTranslation } from 'next-export-i18n';
 import { Localization } from '../../../types/localization';
 import styles from './Header.module.scss';
+import { clientConfigStateAtom, isMobileAtom } from '../../stores/ClientConfigStore';
 
 // Lazy loaded components
 
@@ -26,6 +28,11 @@ export type HeaderComponentProps = {
 export const Header: FC<HeaderComponentProps> = ({ name, chatAvailable, chatDisabled, online }) => {
   const [canHideChat, setCanHideChat] = useState(false);
   const { t } = useTranslation();
+  const isMobile = useRecoilValue(isMobileAtom);
+  const { mobileChatEnabled } = useRecoilValue(clientConfigStateAtom);
+  const isMobileDevice = isMobile === true;
+  const mobileChatAllowed = mobileChatEnabled !== false;
+  const chatDisabledForDevice = chatDisabled || (isMobileDevice && !mobileChatAllowed);
 
   useEffect(() => {
     setCanHideChat(window.innerWidth >= 768);
@@ -56,10 +63,10 @@ export const Header: FC<HeaderComponentProps> = ({ name, chatAvailable, chatDisa
           {name}
         </h1>
       </div>
-      {chatAvailable && !chatDisabled && (
+      {chatAvailable && !chatDisabledForDevice && (
         <UserDropdown id="user-menu" hideTitleOnMobile showToggleChatOption={canHideChat} />
       )}
-      {!chatAvailable && !chatDisabled && (
+      {!chatAvailable && !chatDisabledForDevice && (
         <Tooltip
           overlayClassName={styles.toolTip}
           title={t(Localization.Frontend.Header.chatWillBeAvailable)}

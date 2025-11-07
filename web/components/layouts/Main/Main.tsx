@@ -29,6 +29,7 @@ import { PushNotificationServiceWorker } from '../../workers/PushNotificationSer
 import { AppStateOptions } from '../../stores/application-state';
 import { Noscript } from '../../ui/Noscript/Noscript';
 import { ServerStatus } from '../../../interfaces/server-status.model';
+import { ViewerPasswordGate } from '../../auth/ViewerPasswordGate';
 
 // Lazy loaded components
 
@@ -118,6 +119,7 @@ export const Main: FC = () => {
       <PushNotificationServiceWorker />
       <TitleNotifier name={name} />
       <Theme />
+      <ViewerPasswordGate />
       <Script strategy="afterInteractive" src="/customjavascript" />
       <Layout ref={layoutRef} className={styles.layout}>
         <Header

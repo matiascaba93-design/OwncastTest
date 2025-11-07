@@ -83,6 +83,7 @@ export const DELETE_WEBHOOK = `${API_LOCATION}webhooks/delete`;
 
 // Create a single webhook
 export const CREATE_WEBHOOK = `${API_LOCATION}webhooks/create`;
+export const RECORDINGS = `${API_LOCATION}recordings`;
 
 // hard coded social icons list
 export const SOCIAL_PLATFORMS_LIST = `${NEXT_PUBLIC_API_HOST}api/socialplatforms`;

@@ -194,6 +194,10 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
       label: <Link href="/admin/logs">Logs</Link>,
       key: '/admin/logs',
     },
+    {
+      label: <Link href="/admin/recordings">Recordings</Link>,
+      key: '/admin/recordings',
+    },
     federationEnabled && {
       label: <Link href="/admin/federation/actions">Social Actions</Link>,
       key: '/admin/federation/actions',
@@ -369,7 +373,7 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
 
         <Footer className="footer-container">
           <a href="https://owncast.online/?source=admin" target="_blank" rel="noopener noreferrer">
-            About Owncast v{versionNumber}
+            Private owncast v{versionNumber}
           </a>
         </Footer>
       </Layout>

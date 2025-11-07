@@ -11,6 +11,7 @@ import (
 	"github.com/owncast/owncast/config"
 	"github.com/owncast/owncast/core/chat"
 	"github.com/owncast/owncast/core/data"
+	"github.com/owncast/owncast/core/recorder"
 	"github.com/owncast/owncast/core/rtmp"
 	"github.com/owncast/owncast/core/transcoder"
 	"github.com/owncast/owncast/core/webhooks"
@@ -74,6 +75,7 @@ func setStreamAsConnected(rtmpOut *io.PipeReader) {
 	go webhooks.SendStreamStatusEvent(models.StreamStarted)
 	selectedThumbnailVideoQualityIndex, isVideoPassthrough := configRepository.FindHighestVideoQualityIndex(_currentBroadcast.OutputSettings)
 	transcoder.StartThumbnailGenerator(segmentPath, selectedThumbnailVideoQualityIndex, isVideoPassthrough)
+	recorder.Start(selectedThumbnailVideoQualityIndex)
 
 	_ = chat.SendSystemAction("Stay tuned, the stream is **starting**!", true)
 	chat.SendAllWelcomeMessage()
@@ -110,6 +112,8 @@ func SetStreamAsDisconnected() {
 	if _yp != nil {
 		_yp.Stop()
 	}
+
+	recorder.Stop()
 
 	// If there is no current broadcast available the previous stream
 	// likely failed for some reason. Don't try to append to it.

@@ -121,6 +121,10 @@ export interface NotificationsConfig {
   discord: DiscordNotification;
 }
 
+export interface ViewerAccessConfig {
+  enabled: boolean;
+}
+
 export interface Health {
   healthy: boolean;
   healthyPercentage: number;
@@ -142,6 +146,8 @@ export interface ConfigDetails {
   streamKeys: StreamKey[];
   streamKeyOverridden: boolean;
   adminPassword: string;
+  viewerAccess: ViewerAccessConfig;
+  recordingEnabled: boolean;
   videoSettings: VideoSettingsFields;
   webServerPort: string;
   socketHostOverride: string;
@@ -152,6 +158,8 @@ export interface ConfigDetails {
   forbiddenUsernames: string[];
   suggestedUsernames: string[];
   chatDisabled: boolean;
+  mobileChatEnabled: boolean;
+  mobileExtraPageContentEnabled: boolean;
   chatSpamProtectionEnabled: boolean;
   chatSlurFilterEnabled: boolean;
   federation: Federation;

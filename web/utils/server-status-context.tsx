@@ -10,6 +10,10 @@ const initialServerConfigState: ConfigDetails = {
   streamKeys: [],
   streamKeyOverridden: false,
   adminPassword: '',
+  viewerAccess: {
+    enabled: false,
+  },
+  recordingEnabled: false,
   instanceDetails: {
     customStyles: '',
     customJavascript: '',
@@ -69,6 +73,8 @@ const initialServerConfigState: ConfigDetails = {
   forbiddenUsernames: [],
   suggestedUsernames: [],
   chatDisabled: false,
+  mobileChatEnabled: true,
+  mobileExtraPageContentEnabled: true,
   chatSpamProtectionEnabled: true,
   chatSlurFilterEnabled: false,
   chatJoinMessagesEnabled: true,
